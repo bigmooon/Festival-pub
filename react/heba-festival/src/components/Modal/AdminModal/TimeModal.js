@@ -26,33 +26,41 @@ function TimeModal({ onClose, targetTables }) {
     setTime((prevTime) => prevTime - 10);
   };
 
-  const adjustTime = async() => {
-    const response = await fetch('http://150.230.252.177:5000/admin/add-time', {
-      mode: 'cors',
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: JSON.stringify({
-        'token': token,
-        'table_list': targetTableArray,
-	'mins': time,
-      }),
-    })
-    .then((res) => res.json())
-    .then((res) => {
-      let successList = Object.keys(res.result)
-
-      if(successList.length > 0) {
-        alert(String(successList.join(', ')) + "번 테이블에 " + time + "분 추가완료!");
-      } else {
-        alert('에러 발생! 개발자에게 문의해주세요');
+  const adjustTime = async () => {
+    const response = await fetch(
+      process.env.REACT_APP_API_URL + "/admin/add-time",
+      {
+        mode: "cors",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: token,
+          table_list: targetTableArray,
+          mins: time,
+        }),
       }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        let successList = Object.keys(res.result);
 
-      return res;
-    });
+        if (successList.length > 0) {
+          alert(
+            String(successList.join(", ")) +
+              "번 테이블에 " +
+              time +
+              "분 추가완료!"
+          );
+        } else {
+          alert("에러 발생! 개발자에게 문의해주세요");
+        }
+
+        return res;
+      });
     handleClose();
 
     return response;
-  }
+  };
 
   useOutSideClick(modalRef, handleClose);
   useEffect(() => {
@@ -79,11 +87,11 @@ function TimeModal({ onClose, targetTables }) {
             <span className="subtext">분</span>
             <button onClick={handleTimeIncrement}>+</button>
           </div>
-            <div className="adminModalBtn">
-              <button onClick={adjustTime}>
-                <span>시간 추가</span>
-              </button>
-            </div>
+          <div className="adminModalBtn">
+            <button onClick={adjustTime}>
+              <span>시간 추가</span>
+            </button>
+          </div>
         </div>
       </div>
     </ModalContainer>

@@ -16,52 +16,64 @@ import ExitTableModal from "components/Modal/AdminModal/ExitTableModal";
 import JoinTableModal from "components/Modal/AdminModal/JoinTableModal";
 
 function Admin() {
-
   const [isOpenTableInfoModal, setIsOpenTableInfoModal] = useState(false);
   const [isOpenTimeModal, setIsOpenTimeModal] = useState(false);
   const [isOpenHeartModal, setIsOpenHeartModal] = useState(false);
-  const [isOpenExitModal, setIsOpenExitModal] = useState(false); 
-
+  const [isOpenExitModal, setIsOpenExitModal] = useState(false);
 
   // a variable for render nums of each tables
-  let tableNums = { male: 0, female: 0, mixed: 0, joined: 0, empty: 0, };
+  let tableNums = { male: 0, female: 0, mixed: 0, joined: 0, empty: 0 };
   let record = [];
 
   // a function for processing data after fetching
   // count each table's number and calculate remained time
   function postProcessData(datas) {
-    record = datas.admin_record
-    let callList = []
+    record = datas.admin_record;
+    let callList = [];
     record.map((rec) => {
       if (rec.type == "call") {
         callList = [...callList, rec.from];
         rec.message = String(rec.from) + "번 테이블에서 직원을 호출했습니다.";
       } else if (rec.type == "join") {
-	rec.message = String(rec.from) +"번, " + String(rec.to)
-	              + "번 테이블의 합석 처리를 진행해 주세요.";
+        rec.message =
+          String(rec.from) +
+          "번, " +
+          String(rec.to) +
+          "번 테이블의 합석 처리를 진행해 주세요.";
       } else if (rec.type == "like") {
-	rec.message = String(rec.from)+"번 테이블이 " + String(rec.to)
-		      + "번 테이블에게 좋아요를 보냈습니다.";
+        rec.message =
+          String(rec.from) +
+          "번 테이블이 " +
+          String(rec.to) +
+          "번 테이블에게 좋아요를 보냈습니다.";
       }
       return rec;
-    })
+    });
 
     tableNums = { male: 0, female: 0, mixed: 0, joined: 0, empty: 0 };
     const currentTime = new Date();
 
     const processIndividualData = (data) => {
       const endTime = new Date(data.end_time);
-      const remainedTime = (endTime.getTime() - currentTime) / 1000;    
+      const remainedTime = (endTime.getTime() - currentTime) / 1000;
 
       // translate data to AdminTable
       return (
-        <AdminTable tableNumber={data.table_no} gender={data.gender} headCount={data.nums}
-         huntingSuccess={data.join} remainedTime={remainedTime}
-	 managerCall={callList.includes(data.table_no)} friendCode={data.referrer}
-	 onClickTable={ (e) => { onClickTableElem(e, data); } }/>
+        <AdminTable
+          tableNumber={data.table_no}
+          gender={data.gender}
+          headCount={data.nums}
+          huntingSuccess={data.join}
+          remainedTime={remainedTime}
+          managerCall={callList.includes(data.table_no)}
+          friendCode={data.referrer}
+          onClickTable={(e) => {
+            onClickTableElem(e, data);
+          }}
+        />
       );
     };
-    record.sort((a,b) => b.index - a.index);
+    record.sort((a, b) => b.index - a.index);
     const ret = datas.result.map((data) => processIndividualData(data));
     return ret;
   }
@@ -76,7 +88,7 @@ function Admin() {
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ["get-all"],
     queryFn: async () => {
-      const response = await fetch("http://150.230.252.177:5000/get-all", {
+      const response = await fetch(process.env.REACT_APP_API_URL + "/get-all", {
         mode: "cors",
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -193,22 +205,22 @@ function Admin() {
     setIsMultipleSelectMode(!isMultipleSelectMode);
   };
 
-  const onDeleteAlarm = async(index) => {
-    await fetch('http://150.230.252.177:5000/admin/del-record', {
-      mode: 'cors',
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
+  const onDeleteAlarm = async (index) => {
+    await fetch(process.env.REACT_APP_API_URL + "/admin/del-record", {
+      mode: "cors",
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        'token': token,
-	'notice_index': index,
+        token: token,
+        notice_index: index,
       }),
     })
-    .then((res) => res.json())
-    .then((res) => {
-      if (res.result == 'fail') {
-        alert('서버 에러 발생!');
-      }
-    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.result == "fail") {
+          alert("서버 에러 발생!");
+        }
+      });
   };
 
   // 현재 시간 출력
@@ -284,62 +296,112 @@ function Admin() {
           </div>
           <div class="table-container">
             <div className="table-container-grid">
-            {React.Children.toArray(data).map((child) => {
-              const tableNumber = child.props.tableNumber;
-              const isSelected = selectedTable.includes(tableNumber);
-              return React.cloneElement(child, {
-                className: isSelected ? "selected-table" : ""
-              });
-            })}
+              {React.Children.toArray(data).map((child) => {
+                const tableNumber = child.props.tableNumber;
+                const isSelected = selectedTable.includes(tableNumber);
+                return React.cloneElement(child, {
+                  className: isSelected ? "selected-table" : "",
+                });
+              })}
             </div>
-            {isOpenTableInfoModal && <TableInfoModal onClose={() => onCloseModal("tableInfo")}
-                                      tableNumber={tableElem.table_no} nums={tableElem.nums}
-                                      startTime={tableElem.start_time} endTime={tableElem.end_time}
-                                      code={tableElem.code} referrer={tableElem.referrer}>
-                                     </TableInfoModal>
-            }
+            {isOpenTableInfoModal && (
+              <TableInfoModal
+                onClose={() => onCloseModal("tableInfo")}
+                tableNumber={tableElem.table_no}
+                nums={tableElem.nums}
+                startTime={tableElem.start_time}
+                endTime={tableElem.end_time}
+                code={tableElem.code}
+                referrer={tableElem.referrer}
+              ></TableInfoModal>
+            )}
           </div>
           <div className="admin-footer">
             <div className="footer-button">
               <div className="blue-btn-box">
-                <button className="time-plus" onClick={ () => onClickButton("time") }>
+                <button
+                  className="time-plus"
+                  onClick={() => onClickButton("time")}
+                >
                   시간 추가
                 </button>
-                { isOpenTimeModal && <TimeModal onClose={ () => onCloseModal("time") }
-                          targetTables={ selectedTable }></TimeModal> }
-                <button className="heart-plus" onClick={ () => onClickButton("heart") }>
+                {isOpenTimeModal && (
+                  <TimeModal
+                    onClose={() => onCloseModal("time")}
+                    targetTables={selectedTable}
+                  ></TimeModal>
+                )}
+                <button
+                  className="heart-plus"
+                  onClick={() => onClickButton("heart")}
+                >
                   하트 충전
                 </button>
-                { isOpenHeartModal && <HeartModal onClose={ () => onCloseModal("heart") }
-                                      targetTables={ selectedTable }></HeartModal> }
-                <button className="table-exit" onClick={ () => onClickButton("exit") }>
+                {isOpenHeartModal && (
+                  <HeartModal
+                    onClose={() => onCloseModal("heart")}
+                    targetTables={selectedTable}
+                  ></HeartModal>
+                )}
+                <button
+                  className="table-exit"
+                  onClick={() => onClickButton("exit")}
+                >
                   퇴장 처리
                 </button>
-                { isOpenExitModal && <ExitTableModal onClose={ () => onCloseModal("exit") }
-                                      targetTables={ selectedTable }></ExitTableModal> }
+                {isOpenExitModal && (
+                  <ExitTableModal
+                    onClose={() => onCloseModal("exit")}
+                    targetTables={selectedTable}
+                  ></ExitTableModal>
+                )}
               </div>
-              <button className="table_choice" style={ buttonStyle } onClick={ onClickTableSelectButton }>
-                { isMultipleSelectMode ? "선택 취소" : "테이블 선택" }
+              <button
+                className="table_choice"
+                style={buttonStyle}
+                onClick={onClickTableSelectButton}
+              >
+                {isMultipleSelectMode ? "선택 취소" : "테이블 선택"}
               </button>
-	    </div>
+            </div>
           </div>
         </div>
         <div className="alarm-container">
           {record.map((item) => {
             return (
               <div className="alarm-item">
-                <button className="alarmdel" onClick={() => onDeleteAlarm(item.index)}>
-                  <img className="alarmbtn" src={CloseBtn} alt="close btn"></img>
+                <button
+                  className="alarmdel"
+                  onClick={() => onDeleteAlarm(item.index)}
+                >
+                  <img
+                    className="alarmbtn"
+                    src={CloseBtn}
+                    alt="close btn"
+                  ></img>
                 </button>
-                <br/>
+                <br />
                 {/* 알람데이터 type에 따라 color 지정 */}
-                <span className="alarmData-span" style={{ color: item.type == "join" ? "#DD7DFF"
-				                               : item.type == "like" ? "#FF8FD2"
-				                               : item.type == "call" ? "#FFC555"
-                                                               : "red",}}>
-                  { item.type == "join" ? "[합석처리]"
-                    : item.type == "call" ? "[직원 호출]"
-		    : item.type == "like" ? "[하트 수신]" : "[undefined]"}
+                <span
+                  className="alarmData-span"
+                  style={{
+                    color:
+                      item.type == "join"
+                        ? "#DD7DFF"
+                        : item.type == "like"
+                          ? "#FF8FD2"
+                          : item.type == "call"
+                            ? "#FFC555"
+                            : "red",
+                  }}
+                >
+                  {item.type == "join"
+                    ? "[합석처리]"
+                    : item.type == "call"
+                      ? "[직원 호출]"
+                      : item.type == "like"
+                        ? "[하트 수신]"
+                        : "[undefined]"}
                 </span>
                 <span className="alarm-message">{item.message}</span>
                 <p className="alarm-time-p">{item.time}</p>

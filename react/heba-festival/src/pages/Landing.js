@@ -15,35 +15,35 @@ export const Landing = () => {
     fetchData();
   };
 
-  const token = secureLocalStorage.getItem('token');
+  const token = secureLocalStorage.getItem("token");
   // assume it's valid token if token is exist in secureLocalStorage
   // TODO: need to be change later
-  if (token == null || secureLocalStorage.getItem('table_no') == null) {
-    navigate('/error');
+  if (token == null || secureLocalStorage.getItem("table_no") == null) {
+    navigate("/error");
   }
 
-  const fetchData = async() => {
+  const fetchData = async () => {
     try {
-      await fetch('http://150.230.252.177:5000/get-table', {
-        mode:'cors',
-	method:'POST',
-	headers:{'Content-Type':'application/json',},
-	body:JSON.stringify({
-	  'token': token,
-	  'code': secureLocalStorage.getItem('code'),
-	}),
+      await fetch(process.env.REACT_APP_API_URL + "/get-table", {
+        mode: "cors",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: token,
+          code: secureLocalStorage.getItem("code"),
+        }),
       })
-      .then((res) => res.json())
-      .then((response) => {
-        if (response.result === 'fail') {
-          navigate('/error');
-        } else if (response.result === 'code_unmatch') {
-          setIsModalOpen(true);
-	} else { 
-	  setIsModalOpen(false);
-          secureLocalStorage.setItem('gender', response.result.gender);
-	}
-      });
+        .then((res) => res.json())
+        .then((response) => {
+          if (response.result === "fail") {
+            navigate("/error");
+          } else if (response.result === "code_unmatch") {
+            setIsModalOpen(true);
+          } else {
+            setIsModalOpen(false);
+            secureLocalStorage.setItem("gender", response.result.gender);
+          }
+        });
     } catch (error) {
       console.log(error);
     }
@@ -64,14 +64,20 @@ export const Landing = () => {
       </div>
       <div className="homeBtnContainer">
         <button className="linkSicpama">
-	        <Link to ={"https://order.sicpama.com/?token="+token} style={{textDecorationLine: "none"}}>
+          <Link
+            to={"https://order.sicpama.com/?token=" + token}
+            style={{ textDecorationLine: "none" }}
+          >
             <div className="homeBtnTitle">
               <span>주문하기</span>
             </div>
           </Link>
         </button>
         <button className="linkHEBA">
-	        <Link to={ isModalOpen ? '/error' : '/home' } style={{textDecorationLine:"none"}}>
+          <Link
+            to={isModalOpen ? "/error" : "/home"}
+            style={{ textDecorationLine: "none" }}
+          >
             <div className="homeBtnTitle">
               <span>헌팅하기</span>
             </div>
@@ -79,6 +85,5 @@ export const Landing = () => {
         </button>
       </div>
     </div>
-  
-  )
-}
+  );
+};

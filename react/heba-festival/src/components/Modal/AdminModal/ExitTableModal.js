@@ -15,33 +15,36 @@ function ExitTableModal({ onClose, targetTables, zIndex }) {
   const handleClose = () => {
     onClose?.();
   };
-  
-  const processReject = async() => {
-    const response = await fetch('http://150.230.252.177:5000/admin/reset-table', {
-      mode: 'cors',
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: JSON.stringify({
-        'token': token,
-	'table_list': targetTableArray,
-      }),
-    })
-    .then((res) => res.json())
-    .then((res) => {
-      let successList = Object.keys(res)
 
-      if(successList.length > 0) {
-	alert(String(successList.join(', ')) + "번 테이블 퇴장완료!");
-      } else {
-	alert('에러 발생! 개발자에게 문의해주세요');
+  const processReject = async () => {
+    const response = await fetch(
+      process.env.REACT_APP_API_URL + "/admin/reset-table",
+      {
+        mode: "cors",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: token,
+          table_list: targetTableArray,
+        }),
       }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        let successList = Object.keys(res);
 
-      return res;
-    });
+        if (successList.length > 0) {
+          alert(String(successList.join(", ")) + "번 테이블 퇴장완료!");
+        } else {
+          alert("에러 발생! 개발자에게 문의해주세요");
+        }
+
+        return res;
+      });
     handleClose();
-    
+
     return response;
-  }
+  };
 
   useOutSideClick(modalRef, handleClose);
   useEffect(() => {

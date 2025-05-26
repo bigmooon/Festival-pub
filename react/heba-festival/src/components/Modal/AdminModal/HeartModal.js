@@ -26,34 +26,41 @@ function HeartModal({ onClose, targetTables, zIndex }) {
     setHeart((prevHeart) => prevHeart - 1);
   };
 
-  const addHeart = async() => {
-    const response = await fetch('http://150.230.252.177:5000/admin/add-likes', {
-      mode: 'cors',
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: JSON.stringify({
-        'token': token,
-        'table_list': targetTableArray,
-	'count': heart,
-      }),
-    })
-    .then((res) => res.json())
-    .then((res) => {
-      let successList = Object.keys(res.result)
-
-      if(successList.length > 0) {
-        alert(String(successList.join(', ')) + "번 테이블에 하트 " + String(heart) + "개 추가완료!");
-      } else {
-        alert('에러 발생! 개발자에게 문의해주세요');
+  const addHeart = async () => {
+    const response = await fetch(
+      process.env.REACT_APP_API_URL + "/admin/add-likes",
+      {
+        mode: "cors",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: token,
+          table_list: targetTableArray,
+          count: heart,
+        }),
       }
+    )
+      .then((res) => res.json())
+      .then((res) => {
+        let successList = Object.keys(res.result);
 
-      return res;
-    });
+        if (successList.length > 0) {
+          alert(
+            String(successList.join(", ")) +
+              "번 테이블에 하트 " +
+              String(heart) +
+              "개 추가완료!"
+          );
+        } else {
+          alert("에러 발생! 개발자에게 문의해주세요");
+        }
+
+        return res;
+      });
     handleClose();
 
     return response;
-  }
-
+  };
 
   useOutSideClick(modalRef, handleClose);
   useEffect(() => {
@@ -70,7 +77,9 @@ function HeartModal({ onClose, targetTables, zIndex }) {
       <div className="overlay">
         <div className="adminModalWrap" ref={modalRef}>
           <div className="adminModalTitle">
-            <span className="selectnum">{targetTableArray.join(", ")}번 테이블</span>
+            <span className="selectnum">
+              {targetTableArray.join(", ")}번 테이블
+            </span>
           </div>
           <div className="adminModalContent timeSet">
             <button onClick={handleHeartDecrement}>-</button>
